@@ -432,33 +432,20 @@ class TestOptim(TestCase):
             ((optim.Adagrad, optim._multi_tensor.Adagrad), dict(weight_decay=1)),
         ]
 
-        kIterations = 11
+        kIterations = 4
         device = 'cuda'
 
         for optimizers, params in optimizer_pairs_with_flags:
             res = []
             for opt in optimizers:
-                weight = torch.tensor([[-0.2109, -0.4976], [-0.1413, -0.3420], [-0.2524, 0.6976]],
-                                      dtype=torch.float64, device=device, requires_grad=True)
-                bias = torch.tensor([-0.1085, -0.2979, 0.6892], dtype=torch.float64, device=device, requires_grad=True)
-                weight2 = torch.tensor([[-0.0508, -0.3941, -0.2843]],
-                                       dtype=torch.float64, device=device, requires_grad=True)
-                bias2 = torch.tensor([-0.0711], dtype=torch.float64, device=device, requires_grad=True)
                 input = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5, 0.6], dtype=torch.float64, device=device).reshape(3, 2)
 
+                torch.manual_seed(1)
                 model = torch.nn.Sequential(torch.nn.Linear(2, 3),
                                             torch.nn.Sigmoid(),
                                             torch.nn.Linear(3, 1),
                                             torch.nn.Sigmoid())
-                model.to(torch.float64).to(device)
-
-                pretrained_dict = model.state_dict()
-                pretrained_dict['0.weight'] = weight
-                pretrained_dict['0.bias'] = bias
-                pretrained_dict['2.weight'] = weight2
-                pretrained_dict['2.bias'] = bias2
-                model.load_state_dict(pretrained_dict)
-
+                model.to(dtype=torch.float64, device=device)
                 optimizer = opt(model.parameters(), **params)
 
                 for _ in range(kIterations):
@@ -467,8 +454,10 @@ class TestOptim(TestCase):
                     loss = output.sum()
                     loss.backward()
 
-                    if iter == 0:
-                        model.parameters().__next__().grad = None
+                    # Test that step behaves as expected (a no-op) when grads are set to None
+                    # TODO: uncomment after optim foreach cleanup is landed
+                    # if iter == 0:
+                    #     optimizer.zero_grad(set_to_none=True)
 
                     optimizer.step()
 
