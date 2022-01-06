@@ -2,7 +2,6 @@ import contextlib
 
 import torch
 
-
 @contextlib.contextmanager
 def reparametrize_module(module, parameters_and_buffers):
     # Parametrization does not support to change submodules directly

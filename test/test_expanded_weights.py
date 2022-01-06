@@ -321,7 +321,7 @@ class ContextManagerTests(TestBase):
         test_case._do_test(module, input)
 
 # TODO: Once all of these use ModuleInfo, replace with ModuleInfo tests
-supported_modules = ['Linear']
+supported_modules = ['Linear', 'Conv2d', 'GroupNorm', 'LayerNorm', 'InstanceNorm', 'Embedding']
 supported_tests = [t for t in module_tests + new_module_tests if 'module_name' in t and t['module_name'] in supported_modules]
 for test_param in supported_tests:
     if 'constructor' not in test_param:
