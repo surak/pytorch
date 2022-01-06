@@ -1,7 +1,7 @@
 #pragma once
 
 #include <c10/util/variant.h>
-#include <jit/passes/symbolic_shape_runtime_fusion.h>
+#include <torch/csrc/jit/passes/symbolic_shape_runtime_fusion.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/passes/symbolic_shape_runtime_fusion.h>
 #include <torch/csrc/jit/passes/utils/subgraph_utils.h>
@@ -228,7 +228,9 @@ class TORCH_API TensorExprKernel {
   Tensor bindInput(const torch::jit::Value* input);
   BlockPtr bindAllInputs();
 
-  Tensor convertOutputToCorrectStrides(torch::jit::Value* v);
+  Tensor convertSymbolicOutputToCorrectStrides(torch::jit::Value* v);
+  Tensor convertStaticShapeOutputToCorrectStrides(torch::jit::Value* v);
+  Tensor convertOutputToCorrectStrides(std::vector<ExprHandle>& sizes, std::vector<size_t>& sorted_stride_indices_descending, std::vector<ExprPtr>& strides, BufPtr& buf);
 
   // Captures the information for reduction operation nodes.
   struct ReductionInfo {
@@ -279,6 +281,7 @@ class TORCH_API TensorExprKernel {
   std::vector<CodeGen::BufferArg> bufferArgs_;
   std::vector<std::vector<int64_t>> tensorOutputSizes_;
   std::vector<std::vector<int64_t>> tensorOutputStrides_;
+  std::vector<torch::jit::StrideInput> tensorOutputStrideDesc_;
   std::vector<UnpackedTensorOptions> tensorOutputTensorOptions_;
   std::unordered_set<BufPtr> bufOutputs_;
   std::unordered_map<const torch::jit::Value*, BufPtr> bufs_;
