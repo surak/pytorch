@@ -90,6 +90,8 @@ def _snake_case(s: str) -> str:
 def _is_from_torch(obj: Any) -> bool:
     module_name = getattr(obj, '__module__', None)
     if module_name is not None:
+        # demangling for selective intern
+        module_name = re.sub(r"<torch_package_([0-9]*)>\.torch", "torch", module_name)
         base_module = module_name.partition('.')[0]
         return base_module == 'torch'
 
@@ -781,6 +783,18 @@ class Graph:
         op = _snake_case(op)
         return op
 
+    def _sanitize_for_selective_intern(self, code):
+        """
+        selective intern transforms torch into an interned package in order to allow users to
+        extern most parts of it, while interning the unstable bits like torch.fb. This is primarily
+        done in the Importer, therefore, it is not sanitized using the reduce functions and
+        symbols involving torch transform into <torch_package_XX>.torch which causes compilation errors.
+        """
+        code.globals["torch"] = torch
+        code.src = re.sub(r"<torch_package_([0-9]*)>\.torch", "torch", code.src)
+        return code
+
+
     @compatibility(is_backward_compatible=True)
     def python_code(self, root_module: str) -> PythonCode:
         """
@@ -841,7 +855,9 @@ class Graph:
                     node._repr_fn = orig_repr_fns[node]
 
         with override_node_repr(self):
-            return self._python_code(root_module, namespace)
+            code = self._python_code(root_module, namespace)
+            code = self._sanitize_for_selective_intern(code)
+            return code
 
     def _python_code(self, root_module: str, namespace: _Namespace) -> PythonCode:
         free_vars: List[str] = []

@@ -650,6 +650,7 @@ class {module_name}(torch.nn.Module):
         del dict_without_graph['_graph']
 
         generated_module_name = f'fx-generated._{exporter.get_unique_id()}'
+        torch_package_name = f'<torch_package_{exporter.get_unique_id()}>.'
         python_code = self.recompile()
         import_block = _format_import_block(python_code.globals, exporter.importer)
         module_code = import_block + self.code

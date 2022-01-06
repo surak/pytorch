@@ -86,13 +86,11 @@ class Importer(ABC):
             name = getattr(obj, "__qualname__", None)
         if name is None:
             name = obj.__name__
-
         orig_module_name = self.whichmodule(obj, name)
         # Demangle the module name before importing. If this obj came out of a
         # PackageImporter, `__module__` will be mangled. See mangling.md for
         # details.
         module_name = demangle(orig_module_name)
-
         # Check that this name will indeed return the correct object
         try:
             module = self.import_module(module_name)

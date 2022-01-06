@@ -31,6 +31,7 @@ class TestMisc(PackageTestCase):
             """\
                 ├── .data
                 │   ├── extern_modules
+                │   ├── selective_extern_packages
                 │   └── version
                 ├── main
                 │   └── main
@@ -54,6 +55,7 @@ class TestMisc(PackageTestCase):
             """\
                 ├── .data
                 │   ├── extern_modules
+                │   ├── selective_extern_packages
                 │   └── version
                 ├── main
                 │   └── main
@@ -66,7 +68,7 @@ class TestMisc(PackageTestCase):
             """
         )
 
-        with PackageExporter(buffer) as he:
+        with PackageExporter(buffer, do_selective_intern=True) as he:
             import module_a
             import package_a
             import package_a.subpackage
