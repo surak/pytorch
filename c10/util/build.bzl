@@ -1,5 +1,19 @@
 def define_targets(rules):
     rules.cc_library(
+        name = "TypeCast",
+        srcs = ["TypeCast.cpp"],
+        hdrs = ["TypeCast.h"],
+        linkstatic = True,
+        local_defines = ["C10_BUILD_MAIN_LIB"],
+        visibility = ["//visibility:public"],
+        deps = [
+            ":base",
+            "//c10/core:ScalarType",
+            "//c10/macros",
+        ],
+    )
+
+    rules.cc_library(
         name = "base",
         srcs = rules.glob(
             ["*.cpp"],
@@ -30,6 +44,20 @@ def define_targets(rules):
         }),
     )
 
+    rules.cc_library(
+        name = "typeid",
+        srcs = ["typeid.cpp"],
+        hdrs = ["typeid.h"],
+        linkstatic = True,
+        local_defines = ["C10_BUILD_MAIN_LIB"],
+        visibility = ["//visibility:public"],
+        deps = [
+            ":base",
+            "//c10/core:ScalarType",
+            "//c10/macros",
+        ],
+    )
+
     rules.filegroup(
         name = "headers",
         srcs = rules.glob(
@@ -37,14 +65,5 @@ def define_targets(rules):
             exclude = [
             ],
         ),
-        visibility = ["//c10:__pkg__"],
-    )
-
-    rules.filegroup(
-        name = "sources",
-        srcs = [
-            "TypeCast.cpp",
-            "typeid.cpp",
-        ],
         visibility = ["//c10:__pkg__"],
     )
